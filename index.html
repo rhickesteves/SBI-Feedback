@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBI Feedback Coach (Remote Team)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Base background color set via Tailwind */
+        }
+        /* Custom spinner styles using white for visibility on the dark button */
+        .lds-ring {
+            display: inline-block;
+            position: relative;
+            width: 20px;
+            height: 20px;
+        }
+        .lds-ring div {
+            box-sizing: border-box;
+            display: block;
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            margin: 2px;
+            border: 2px solid #fdfbff; /* Use Primary 3 for spinner */
+            border-radius: 50%;
+            animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            border-color: #fdfbff transparent transparent transparent; /* Use Primary 3 */
+        }
+        .lds-ring div:nth-child(1) {
+            animation-delay: -0.45s;
+        }
+        .lds-ring div:nth-child(2) {
+            animation-delay: -0.3s;
+        }
+        .lds-ring div:nth-child(3) {
+            animation-delay: -0.15s;
+        }
+        @keyframes lds-ring {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#ECE5F1] text-[#2d0649] flex items-center justify-center min-h-screen">
+
+    <div class="w-full max-w-2xl mx-auto p-4 sm:p-6 md:p-8">
+        <div class="bg-[#fdfbff] rounded-2xl shadow-lg p-6 sm:p-8">
+            <header class="text-center mb-8">
+                <h1 class="text-3xl sm:text-4xl font-bold text-[#2d0649]">SBI Feedback Coach</h1>
+                <p class="text-[#460078] mt-2">Convert vague feedback into clear, actionable SBI messages.</p>
+            </header>
+
+            <main>
+                <form id="feedback-form">
+                    <div class="mb-4">
+                        <label for="feedback-input" class="block text-sm font-medium text-[#2d0649] mb-2">Enter your vague or unclear feedback:</label>
+                        <textarea id="feedback-input" rows="4" class="w-full p-3 border border-[#a569ff] rounded-lg focus:ring-2 focus:ring-[#7622d7] focus:border-[#7622d7] transition-shadow duration-200 bg-[#fdfbff] placeholder:text-[#460078]/60" placeholder="e.g., 'You're not being a team player.' or 'Great job on the report!'"></textarea>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button type="submit" id="submit-btn" class="w-full sm:w-auto flex-grow bg-[#7622d7] text-[#fdfbff] font-semibold py-3 px-6 rounded-lg hover:bg-[#460078] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#a569ff] transition-colors duration-200 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wand-sparkles"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L11.8 8.2a1.21 1.21 0 0 0 0 1.72l5.8 5.8a1.21 1.21 0 0 0 1.72 0l6.84-6.84a1.21 1.21 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/><path d="M18 21v-2"/><path d="M12 15H8"/><path d="M7 18H5"/></svg>
+                            Convert to SBI
+                        </button>
+                        <button type="button" id="reset-btn" class="w-full sm:w-auto bg-[#ECE5F1] text-[#460078] font-semibold py-3 px-6 rounded-lg hover:bg-[#a569ff]/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#a569ff] transition-colors duration-200">
+                            Clear
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Loading Indicator -->
+                <div id="loading-indicator" class="hidden text-center my-6">
+                    <div role="status" class="inline-flex items-center">
+                         <svg aria-hidden="true" class="w-8 h-8 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-[#7622d7]" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                        </svg>
+                        <span class="text-[#460078] font-medium">Converting...</span>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div id="error-message" class="hidden my-6 p-4 bg-red-100 border border-red-300 text-red-800 rounded-lg"></div>
+
+                <!-- Results -->
+                <div id="results-container" class="hidden mt-8 space-y-6">
+                    <!-- Situation -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-[#460078] uppercase tracking-wide">Situation (S)</h3>
+                        <div class="mt-2 p-4 bg-[#7622d7]/10 text-[#460078] rounded-lg">
+                            <p id="situation-text"></p>
+                            <p id="situation-explanation" class="mt-2 text-sm text-[#460078]/80 italic"></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Behaviour -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-[#460078] uppercase tracking-wide">Behaviour (B)</h3>
+                        <div class="mt-2 p-4 bg-[#a569ff]/10 text-[#460078] rounded-lg">
+                            <p id="behavior-text"></p>
+                            <p id="behavior-explanation" class="mt-2 text-sm text-[#460078]/80 italic"></p>
+                        </div>
+                    </div>
+
+                     <!-- Impact -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-[#460078] uppercase tracking-wide">Impact (I)</h3>
+                        <div class="mt-2 p-4 bg-[#7622d7]/15 text-[#2d0649] rounded-lg">
+                            <p id="impact-text"></p>
+                            <p id="impact-explanation" class="mt-2 text-sm text-[#2d0649]/80 italic"></p>
+                        </div>
+                    </div>
+
+                    <!-- Complete SBI Message -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-sm font-semibold text-[#460078] uppercase tracking-wide">Complete SBI Message</h3>
+                            <button type="button" id="rephrase-btn" class="hidden text-sm bg-[#a569ff]/20 text-[#460078] font-semibold py-1 px-3 rounded-full hover:bg-[#a569ff]/40 transition-colors duration-200 flex items-center gap-1">
+                                ✨ Get Alternatives
+                            </button>
+                        </div>
+                        <div class="p-4 bg-[#ECE5F1] rounded-lg">
+                            <p id="sbi-message-text" class="text-[#2d0649]"></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Rephrase Suggestions -->
+                    <div id="rephrase-results-container" class="hidden">
+                        <h3 class="text-sm font-semibold text-[#460078] uppercase tracking-wide">Alternative Phrasings ✨</h3>
+                        <div id="rephrase-loading" class="hidden mt-2 text-center text-[#460078]">
+                            Generating ideas...
+                        </div>
+                        <div id="rephrase-list" class="mt-2 space-y-2">
+                            <!-- Suggestions will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        <footer class="text-center mt-6 text-sm text-[#460078]/70">
+            <!-- Removed the <p> tag that was here -->
+        </footer>
+    </div>
+
+    <script>
+        // --- DOM Element References ---
+        const form = document.getElementById('feedback-form');
+        const feedbackInput = document.getElementById('feedback-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const errorMessage = document.getElementById('error-message');
+        const resultsContainer = document.getElementById('results-container');
+        
+        const rephraseBtn = document.getElementById('rephrase-btn');
+        const rephraseResultsContainer = document.getElementById('rephrase-results-container');
+        const rephraseLoading = document.getElementById('rephrase-loading');
+        const rephraseList = document.getElementById('rephrase-list');
+        let currentSbiMessage = '';
+        
+        // --- API Details ---
+        // The API Key will be provided by the environment.
+        const API_KEY = "AIzaSyA-yAktMOVdyWkugUL05LiHBAyonJFesUw"; 
+        const AI_MODEL = "gemini-2.5-flash-preview-09-2025"; // Updated model
+
+        // --- Event Listeners ---
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const feedback = feedbackInput.value.trim();
+            if (feedback) {
+                await getSbiAnalysis(feedback);
+            } else {
+                showError("Please enter a feedback message.");
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            feedbackInput.value = '';
+            hideError();
+            hideResults();
+            feedbackInput.focus();
+        });
+
+        rephraseBtn.addEventListener('click', async () => {
+            if (currentSbiMessage) {
+                await getAlternativePhrasings(currentSbiMessage);
+            }
+        });
+        
+        // --- Core API Logic ---
+        async function getSbiAnalysis(feedback) {
+            setLoading(true);
+            hideError();
+            hideResults();
+
+            // *** MODIFIED PROMPT ***
+            const systemPrompt = `You are an expert communication coach specialising in the Situation-Behaviour-Impact (SBI) feedback model and the principles of Radical Candor, focusing exclusively on a fully remote team. **Assume all interactions are digital (e.g., video calls, Slack, email, shared docs). All generated output MUST be relevant to a remote work environment and avoid any mention of in-office or face-to-face interactions.**
+
+            Your task is to transform a user's vague or unclear feedback into a structured, actionable SBI message that is both direct and empathetic for a remote context.
+
+            Given the user's input, you must:
+            1.  Infer a likely **Situation** (When and where did this happen in the remote environment? e.g., "During our 1:1 video call yesterday," "In the project Slack channel this morning," "On the shared Google Doc").
+            2.  Identify the specific, observable **Behaviour** (What did the person say or do digitally?), stated neutrally without judgment.
+            3.  Determine the tangible **Impact** of that behaviour on the remote team, project, or individual.
+            4.  Combine these into a clear and concise **SBI Message**. This message must embody Radical Candor: it should be direct, specific, and clear, while also showing you care about the person's success.
+            5.  For each of the three components (Situation, Behaviour, Impact), provide a brief, one-sentence explanation in Australian English of *why* this specific detail is important for clear *remote* feedback (e.g., "This pinpoints the exact digital moment...").
+            
+            If the initial feedback is too vague to create a plausible SBI message, explain what's missing in the response fields.`;
+            
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${API_KEY}`;
+            
+            const payload = {
+                contents: [{ role: "user", parts: [{ text: feedback }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            "situation": { "type": "STRING", "description": "The specific context or situation when the behaviour occurred." },
+                            "situation_explanation": { "type": "STRING", "description": "A brief, 1-sentence explanation of why this situation component is important for clarity." },
+                            "behavior": { "type": "STRING", "description": "The specific, observable behaviour, avoiding judgments or generalizations." },
+                            "behavior_explanation": { "type": "STRING", "description": "A brief, 1-sentence explanation of why this behaviour component is important for clarity." },
+                            "impact": { "type": "STRING", "description": "The tangible effect or result of the behaviour." },
+                            "impact_explanation": { "type": "STRING", "description": "A brief, 1-sentence explanation of why this impact component is important for clarity." },
+                            "sbi_message": { "type": "STRING", "description": "The complete, rewritten feedback message in the SBI format." }
+                        },
+                        required: ["situation", "situation_explanation", "behavior", "behavior_explanation", "impact", "impact_explanation", "sbi_message"]
+                    }
+                }
+            };
+
+            try {
+                // Exponential backoff for retries
+                let response;
+                let delay = 1000;
+                for (let i = 0; i < 5; i++) {
+                    response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) break;
+                    if (response.status === 429 || response.status >= 500) {
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2;
+                    } else {
+                        break; // Don't retry for other errors (e.g., 400)
+                    }
+                }
+
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error("API Error Response:", errorData);
+                    throw new Error(errorData.error?.message || `API request failed with status ${response.status}. Check API Key and permissions.`);
+                }
+
+                const data = await response.json();
+                const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!content) throw new Error("Received an empty or invalid response from the AI.");
+
+                const analysis = JSON.parse(content);
+                displayResults(analysis);
+
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                showError(error.message || "An unexpected error occurred. Please check the console for details.");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function getAlternativePhrasings(feedback) {
+            rephraseLoading.classList.remove('hidden');
+            rephraseBtn.disabled = true;
+            rephraseList.innerHTML = '';
+            rephraseResultsContainer.classList.remove('hidden');
+            hideError();
+
+            // *** MODIFIED PROMPT ***
+            const systemPrompt = `You are an expert writer and communication coach, specialising in remote team dynamics. Rephrase the user's feedback message in 3 different ways. Each version must clearly follow the Situation-Behaviour-Impact (SBI) model and be delivered in a tone of Radical Candor (direct, specific, and empathetic). **Crucially, all suggestions MUST be appropriate for a fully remote team and must not mention in-office or face-to-face work.** Ensure you use Australian English spelling (e.g., 'specialising' instead of 'specializing').`;
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${API_KEY}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: feedback }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            "suggestions": { "type": "ARRAY", "items": { "type": "STRING" }, "description": "An array of 3 rephrased SBI feedback messages." }
+                        },
+                        required: ["suggestions"]
+                    }
+                }
+            };
+
+            try {
+                // Exponential backoff for retries
+                let response;
+                let delay = 1000;
+                for (let i = 0; i < 5; i++) {
+                    response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) break;
+                    if (response.status === 429 || response.status >= 500) {
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2;
+                    } else {
+                        break;
+                    }
+                }
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error?.message || `API request failed with status ${response.status}.`);
+                }
+
+                const data = await response.json();
+                const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!content) throw new Error("Received an empty response for suggestions.");
+
+                const parsedContent = JSON.parse(content);
+                displayRephraseResults(parsedContent.suggestions);
+
+            } catch (error) {
+                console.error("Rephrase Error:", error);
+                showError("Sorry, I couldn't generate suggestions. " + error.message);
+                rephraseResultsContainer.classList.add('hidden');
+            } finally {
+                rephraseLoading.classList.add('hidden');
+                rephraseBtn.disabled = false;
+            }
+        }
+        
+        // --- UI Update Functions ---
+        function setLoading(isLoading) {
+            const buttonIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wand-sparkles"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L11.8 8.2a1.21 1.21 0 0 0 0 1.72l5.8 5.8a1.21 1.21 0 0 0 1.72 0l6.84-6.84a1.21 1.21 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/><path d="M18 21v-2"/><path d="M12 15H8"/><path d="M7 18H5"/></svg>`;
+            const buttonText = `Convert to SBI`;
+
+            if (isLoading) {
+                loadingIndicator.classList.remove('hidden');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<div class="lds-ring"><div></div><div></div><div></div><div></div></div> Converting...`;
+            } else {
+                loadingIndicator.classList.add('hidden');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `${buttonIcon} ${buttonText}`;
+            }
+        }
+        
+        function displayResults(analysis) {
+            const { situation, situation_explanation, behavior, behavior_explanation, impact, impact_explanation, sbi_message } = analysis;
+            
+            document.getElementById('situation-text').textContent = situation;
+            document.getElementById('situation-explanation').textContent = situation_explanation;
+            document.getElementById('behavior-text').textContent = behavior;
+            document.getElementById('behavior-explanation').textContent = behavior_explanation;
+            document.getElementById('impact-text').textContent = impact;
+            document.getElementById('impact-explanation').textContent = impact_explanation;
+            document.getElementById('sbi-message-text').textContent = sbi_message;
+            
+            resultsContainer.classList.remove('hidden');
+            currentSbiMessage = sbi_message;
+            rephraseBtn.classList.remove('hidden');
+        }
+
+        function displayRephraseResults(suggestions) {
+            rephraseList.innerHTML = '';
+            if (suggestions && suggestions.length > 0) {
+                suggestions.forEach(suggestion => {
+                    const div = document.createElement('div');
+                    div.className = 'p-3 bg-[#fdfbff] border border-[#a569ff]/50 rounded-md text-[#2d0649] hover:bg-[#ECE5F1] cursor-pointer transition-colors';
+                    div.textContent = suggestion;
+                    div.title = "Click to copy";
+                    div.onclick = () => {
+                        const textArea = document.createElement("textarea");
+                        textArea.value = suggestion;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        try {
+                           // Use document.execCommand as a fallback for iframe environments
+                           document.execCommand('copy');
+                           // You could add a temporary "Copied!" message here
+                        } catch (err) {
+                           console.error('Fallback: Oops, unable to copy', err);
+                        }
+                        document.body.removeChild(textArea);
+                    };
+                    rephraseList.appendChild(div);
+                });
+            } else {
+                const div = document.createElement('div');
+                div.className = 'p-3 bg-[#fdfbff] border border-[#a569ff]/50 rounded-md text-[#2d0649]';
+                div.textContent = 'No suggestions available.';
+                rephraseList.appendChild(div);
+            }
+            rephraseResultsContainer.classList.remove('hidden');
+        }
+
+        function hideResults() {
+            resultsContainer.classList.add('hidden');
+            rephraseBtn.classList.add('hidden');
+            rephraseResultsContainer.classList.add('hidden');
+            rephraseList.innerHTML = '';
+            currentSbiMessage = '';
+
+            // Clear explanation fields
+            document.getElementById('situation-explanation').textContent = '';
+            document.getElementById('behavior-explanation').textContent = '';
+            document.getElementById('impact-explanation').textContent = '';
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+        function hideError() {
+            errorMessage.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
